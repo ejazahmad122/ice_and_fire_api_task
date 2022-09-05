@@ -1,155 +1,78 @@
-from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .models import BookShelf, Author
+from .models import BookShelf
 from .serializers import BookSerializer
-import requests
 from .utils import get_the_index_of_author
-from rest_framework import viewsets
+from rest_framework import generics
+from rest_framework import status
+import requests
 
-class IceAndFireApi(viewsets.ViewSet):
-    def list(self,request):
-        """show all books in local data base 
+
+class IceAndFireApi(generics.ListCreateAPIView):
+
+    queryset = BookShelf.objects.all()
+    serializer_class = BookSerializer
+
+    def create(self, request, *args, **kwargs):
+        """Override the create method of CreateAPIView for adding the logic of author name change to relevant object
+
         Args:
-            request (Http): it will hold the data
-        Returns:
-            response (json): data about all books
-        """
-        data = BookShelf.objects.all()
-        serializer = BookSerializer(data, many=True)
-        response = {
-            'status_code':200,
-            'status':"success",
-            'data':serializer.data
-        }
-        return Response(response)
-
-    def retrieve(self, request, pk=None):
-        """This view show the details of a specific book
-        # Args:
-        #     pk (int): book id 
-        #     request (Http): it will hold the data
-        # Returns:
-        #     response (json): data about the searched book
-        # """
-        id = pk
-        obj = get_object_or_404(BookShelf, id=id)
-        serializer = BookSerializer(obj)
-        response = {
-            "status_code":200,
-            "status":"success",
-            "data":serializer.data
-        }
-        return Response(response)
-
-    def create(self, request):
-        """This view will add the book in local database
-        Args:
-            request (Http): it will hold the post data
+            request (http): it will hold the post data
 
         Returns:
-            response (json): data about the added book
+            http: response of the requested data
         """
         try:
             request.data['author'] = get_the_index_of_author(request)
 
-            serializer = BookSerializer(data = request.data)
-            if serializer.is_valid():
-                serializer.save()
-                response = {
-                    'status_code':201,
-                    'status':"success",
-                    'data':{"book":serializer.data}
-                }
-                return Response(response)
-            return Response({"status":404, 'message':"something went wrong while insertion !!"})
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            return Response({
+                'status_code': status.HTTP_201_CREATED,
+                'status': "success",
+                'data': {"books": serializer.data},
+            })
         except:
-            return Response({"status":404, 'message':"something went wrong while insertion !!"})
+            return Response({"status": status.HTTP_400_BAD_REQUEST, 'message': "something went wrong while insertion !!"})
 
-    def update(self, request, pk):
-        """This view update the specific id book 
+
+class IceAndFireApiDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = BookShelf.objects.all()
+    serializer_class = BookSerializer
+
+    def update(self, request, pk, *args, **kwargs):
+        """Override the update method of UpdateAPIView for adding the logic of author name change to relevant object
 
         Args:
-            request (Http): it will hold the post data
-            pk (int): book id 
+            request (http): it will hold the post data
+            pk (int): book id
 
         Returns:
-            response (json): data about the updated book
+            http: response of the requested data
         """
         try:
-            update_obj = BookShelf.objects.get(id=id)
+            update_obj = BookShelf.objects.get(id=pk)
             book_name = update_obj.name
             if "author" in request.data:
                 request.data['author'] = get_the_index_of_author(request)
-                    
-            serializer = BookSerializer(update_obj, data=request.data) # set partial=True to update a data partially
+
+            # set partial=True to update a data partially
+            serializer = BookSerializer(
+                update_obj, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 response = {
-                    'status_code':201,
-                    'status':"success",
-                    'message':f"The book {book_name} was Updated successfully",
-                    'data':serializer.data
+                    'status_code': status.HTTP_202_ACCEPTED,
+                    'status': "success",
+                    'message': f"The book {book_name} was Updated successfully",
+                    'data': serializer.data
                 }
                 return Response(response)
-            return Response({"status":400, 'message':"somrthing went wrong while updation !!"})
+            return Response({"status": status.HTTP_400_BAD_REQUEST, 'message': "somrthing went wrong while updation !!"})
         except:
-            return Response({'status':404, 'message':"somrthing went wrong while updation !!"})
+            return Response({'status': status.HTTP_400_BAD_REQUEST, 'message': "somrthing went wrong while updation !!"})
 
-    def partial_update(self, request, pk):
-        """This view update the specific id book 
-
-        Args:
-            request (Http): it will hold the post data
-            pk (int): book id 
-
-        Returns:
-            response (json): data about the updated book
-        """
-        id = pk
-        try:
-            update_obj = BookShelf.objects.get(id=id)
-            book_name = update_obj.name
-            if "author" in request.data:
-                request.data['author'] = get_the_index_of_author(request)
-                    
-            serializer = BookSerializer(update_obj, data=request.data, partial=True) # set partial=True to update a data partially
-            if serializer.is_valid():
-                serializer.save()
-                response = {
-                    'status_code':201,
-                    'status':"success",
-                    'message':f"The book {book_name} was Updated successfully",
-                    'data':serializer.data
-                }
-                return Response(response)
-            return Response({"status":400, 'message':"somrthing went wrong while updation !!"})
-        except:
-            return Response({'status':404, 'message':"somrthing went wrong while updation !!"})
-    
-    def destroy(self, request, pk):
-        """This view will delete the specific id book
-        Args:
-            request (Http): it will hold the post data
-            id (int): book id 
-
-        Returns:
-            response (json): data about the deleted book
-        """
-        try:
-            id = pk
-            obj = BookShelf.objects.get(id=id)
-            book_name = obj.name
-            obj.delete()
-            response = {
-                'status_code':204,
-                'status':"success",
-                'message':f"The book {book_name} was deleted successfully",
-                'data':[]
-            }
-            return Response(response)
-        except :
-            return Response({'status':404, 'message':"somrthing went wrong while deletion !!"})
 
 @api_view(['GET'])
 def ice_and_fire_api(request, name_of_book):
@@ -165,24 +88,24 @@ def ice_and_fire_api(request, name_of_book):
     result = requests.get(url).json()
     if result:
         data = {
-            'name' : result[0]['name'],
-            'isbn' : result[0]['isbn'],
-            'author' : result[0]['authors'],
-            'country' : result[0]['country'],
-            'number_of_pages' : result[0]['numberOfPages'],
-            'publisher' : result[0]['publisher'],
-            'release_date' : result[0]['released'],
+            'name': result[0]['name'],
+            'isbn': result[0]['isbn'],
+            'author': result[0]['authors'],
+            'country': result[0]['country'],
+            'number_of_pages': result[0]['numberOfPages'],
+            'publisher': result[0]['publisher'],
+            'release_date': result[0]['released'],
         }
         response = {
-            'status_code':200,
-            'status':"success",
-            'data':data
+            'status_code': 200,
+            'status': "success",
+            'data': data
         }
     else:
         response = {
-            'status_code':200,
-            'status':"success",
-            'message':'There is no such book here !!',
+            'status_code': 200,
+            'status': "success",
+            'message': 'There is no such book here !!',
             'data': []
-        }   
+        }
     return Response(response)
