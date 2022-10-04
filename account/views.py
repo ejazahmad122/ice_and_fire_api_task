@@ -1,3 +1,4 @@
+from cmath import log
 from django.shortcuts import render
 
 # Create your views here.
@@ -9,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from account.serializers import UserRegistrationSerializer
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 
 from account.serializers import UserLoginSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -55,6 +56,7 @@ class UserLoginView(APIView):
             password = serializer.data.get('password')
             user = authenticate(email=email, password=password)
             if user is not None:
+                login(request, user)
                 token = get_tokens_for_user(user)
                 return Response({'token': token, 'msg': "Login successfully !!"}, status=status.HTTP_202_ACCEPTED)
             return Response({'errors': "email or password invalid"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -65,6 +67,7 @@ class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
+        print("isAuthenticated:", request.user)
         serializer = UserProfileSerialier(request.user)
         return Response({'profile': serializer.data}, status=status.HTTP_200_OK)
 

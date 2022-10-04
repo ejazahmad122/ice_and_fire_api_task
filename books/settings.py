@@ -34,9 +34,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -125,8 +125,8 @@ REST_FRAMEWORK = {
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'example@gmail.com'    #Enter your email here
-EMAIL_HOST_PASSWORD = 'password'          #Enter your password here 
+EMAIL_HOST_USER = 'faltomail60@gmail.com'    #Enter your email here
+EMAIL_HOST_PASSWORD = 'dkjmqummjiwagady'          #Enter your password here 
 EMAIL_USE_TLS = True
 
 

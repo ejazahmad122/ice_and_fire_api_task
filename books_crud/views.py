@@ -6,9 +6,14 @@ from .serializers import BookSerializer
 import requests
 from .utils import get_the_index_of_author
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 class IceAndFireApi(viewsets.ViewSet):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def list(self, request):
         """show all books in local data base 
         Args:
@@ -16,7 +21,10 @@ class IceAndFireApi(viewsets.ViewSet):
         Returns:
             response (json): data about all books
         """
+        print("read all books", request.user)
+        # import pdb; pdb.set_trace()
         data = BookShelf.objects.all()
+            
         serializer = BookSerializer(data, many=True)
         response = {
             'status_code': 200,
@@ -58,6 +66,7 @@ class IceAndFireApi(viewsets.ViewSet):
             serializer = BookSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
+                print("serializer.save", serializer.data)
                 response = {
                     'status_code': 201,
                     'status': "success",

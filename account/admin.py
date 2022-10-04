@@ -1,6 +1,8 @@
 from django.contrib import admin
 from account.models import User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+# from django.contrib.auth.models import User
+
 
 # Register your models here.
 class UserModelAdmin(BaseUserAdmin):
@@ -26,7 +28,6 @@ class UserModelAdmin(BaseUserAdmin):
     search_fields = ('email',)
     ordering = ('email', 'id')
     filter_horizontal = ()
-
 
 
 # Now register the new UserAdmin...

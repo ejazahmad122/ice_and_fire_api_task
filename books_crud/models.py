@@ -1,3 +1,4 @@
+from email.policy import default
 from pyexpat import model
 from django.db import models
 
@@ -12,3 +13,4 @@ class BookShelf(models.Model):
     number_of_pages = models.IntegerField()
     publisher = models.CharField(max_length=200)
     release_date = models.DateField()
+    description = models.CharField(max_length=200, default='')
