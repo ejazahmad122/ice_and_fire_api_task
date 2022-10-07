@@ -38,11 +38,11 @@ This interface is simply meant to demonstrate how a HTTP method on this URL will
 
 ### Getting Data from ice and fire api
 
-For getting data from ice and fire api of a specific book you need to go `http://127.0.0.1:8000/api/external-books/nameOfBook` where nameOfBook could be any name of the book that you want to be searched
+For getting data from ice and fire api of a specific book you need to go GET:`http://127.0.0.1:8000/api/external-books/nameOfBook` where nameOfBook could be any name of the book that you want to be searched
 
 ### Create a Book Recoed
 
-For creating a book record go to the url `http://127.0.0.1:8000/api/v1/books/add/` you have to provide data in content field like 
+For creating a book record go to the url POST:`http://127.0.0.1:8000/api/v1/books/` you have to provide data in content field like 
 
 `{
     "name": "book name",
@@ -52,15 +52,30 @@ For creating a book record go to the url `http://127.0.0.1:8000/api/v1/books/add
     "publisher": "jajji",
     "release_date": "2022-08-08",
     "author": "authorname"
+}`
+
+`{
+headers: {
+        'content-type': 'application/json',
+        'Authorization': 'Bearer ' + accesstoken       
+}
 }`
 
 ### Read all a Book Records
 
-For creating a book record go to the url `http://127.0.0.1:8000/api/v1/books/` all records in data base will be shown
+For creating a book record go to the url GET:`http://127.0.0.1:8000/api/v1/books/` all records in data base will be shown
+
+add this in header file
+`{
+headers: {
+        'content-type': 'application/json',
+        'Authorization': 'Bearer ' + accesstoken       
+}
+}`
 
 ### Update a Book Records
 
-For updating a book record go to the url `http://127.0.0.1:8000/api/v1/books/:id/update` give the id of the book that you want to update and then give the updated data in the below mentioned form in content field
+For updating a book record go to the url PATCH:`http://127.0.0.1:8000/api/v1/books/:id/` give the id of the book that you want to update and then give the updated data in the below mentioned form in content field
 
 `{
     "name": "book name",
@@ -72,8 +87,22 @@ For updating a book record go to the url `http://127.0.0.1:8000/api/v1/books/:id
     "author": "authorname"
 }`
 
+`{
+headers: {
+        'content-type': 'application/json',
+        'Authorization': 'Bearer ' + accesstoken       
+}
+}`
+
 ### Delete a book record
 
-for deleting a book record go to `http://127.0.0.1:8000/api/v1/books/:id/delete` give the id of the book that you want to delete
+for deleting a book record go to DELETE:`http://127.0.0.1:8000/api/v1/books/:id/` give the id of the book that you want to delete
+add this in header file
+`{
+headers: {
+        'content-type': 'application/json',
+        'Authorization': 'Bearer ' + accesstoken       
+}
+}`
 
 
