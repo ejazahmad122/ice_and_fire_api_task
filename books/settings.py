@@ -1,6 +1,10 @@
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
 import os
+
+#load env files
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -12,6 +16,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 CORS_ORIGIN_ALLOW_ALL = True
+
 
 AUTH_USER_MODEL = 'account.User'
 
@@ -122,16 +127,18 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+
+#configurastion for using third pasrt email sender 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'faltomail60@gmail.com'    #Enter your email here
-EMAIL_HOST_PASSWORD = 'dkjmqummjiwagady'          #Enter your password here 
+EMAIL_HOST_USER = str(os.getenv('EMAIL_FROM'))    #Enter your email here
+EMAIL_HOST_PASSWORD = str(os.getenv('EMAIL_PASSWORD'))         #Enter your password here 
 EMAIL_USE_TLS = True
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=20),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
@@ -158,9 +165,10 @@ SIMPLE_JWT = {
     'JTI_CLAIM': 'jti',
 
     'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
-    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=60),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+
 
 PASSWORD_RESET_TIMEOUT = 900
 

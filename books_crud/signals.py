@@ -5,7 +5,7 @@ from books_crud.models import BookShelf
 
 @receiver(post_save, sender=BookShelf)
 def update_description(sender, **kwargs):
-    """This signal update the description of the book
+    """This signal update the description of the book e.g. who created or updated the book
 
     Args:
         sender (model): model where signal is calling

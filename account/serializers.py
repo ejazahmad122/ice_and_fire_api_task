@@ -1,11 +1,9 @@
 from xml.dom import ValidationErr
 from rest_framework import serializers
 from account.models import User
-
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
+from django.utils.encoding import smart_str, force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-
 from account.utils import Util
 
 
@@ -23,6 +21,17 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
+        """override the method to check the given passwords are matched or not 
+
+        Args:
+            attrs (dict): password and confirm password
+
+        Raises:
+            serializers.ValidationError: raise assetequal error
+
+        Returns:
+            dict: password and confirm password
+        """
         password = attrs.get('password')
         password2 = attrs.get('password2')
         if password != password2:
@@ -58,6 +67,17 @@ class UserChangePasswordVSerializer(serializers.Serializer):
         fields = ['password', 'password2']
 
     def validate(self, attrs):
+        """override the method to check the given passwords are matched or not and update the password on data base
+
+        Args:
+            attrs (dict): password and confirm password
+
+        Raises:
+            serializers.ValidationError: raise assetequal error
+
+        Returns:
+            attr(dict): password and confirm password
+        """
         password = attrs.get('password')
         password2 = attrs.get('password2')
         user = self.context.get('user')
@@ -77,15 +97,23 @@ class SendPasswordResetEmailSerializer(serializers.Serializer):
         fields = ['email']
 
     def validate(self, attrs):
+        """override the method and valide the email and send reset password link via email
+
+        Args:
+            attrs (_type_): _description_
+
+        Raises:
+            serializers.ValidationError: unauthorized email
+        """
         email = attrs.get('email')
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email=email)
             uid = urlsafe_base64_encode(force_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
-            link = 'http://localhost:3000/set-new-pass/'+uid+'/'+token
+            pass_reset_link = 'http://localhost:3000/set-new-pass/'+uid+'/'+token
             data = {
                 'subject': "Pass Reset Email",
-                'body': f'Click the link please {link}',
+                'body': f'Click the link please {pass_reset_link}',
                 'to_email': user.email
             }
             Util.send_email(data)
@@ -104,6 +132,17 @@ class UserResetPasswordSerializer(serializers.Serializer):
         fields = ['password', 'password2']
 
     def validate(self, attrs):
+        """override the method to check the given passwords are matched or not and update the new password on data base
+
+        Args:
+            attrs (dict): password, confirm password, uid, token
+
+        Raises:
+            serializers.ValidationError: validate token
+            ValidationErr: passwords are not matched
+
+        """
+
         password = attrs.get('password')
         password2 = attrs.get('password2')
         uid = self.context.get('uid')

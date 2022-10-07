@@ -1,21 +1,11 @@
-from cmath import log
-from django.shortcuts import render
-
-# Create your views here.
-from cgitb import reset
-from urllib import response
-from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
 from account.serializers import UserRegistrationSerializer
-from django.contrib.auth import authenticate, login
-
+from django.contrib.auth import authenticate, login, logout
 from account.serializers import UserLoginSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
-
 from account.serializers import UserProfileSerialier
 from account.serializers import UserChangePasswordVSerializer
 from account.serializers import SendPasswordResetEmailSerializer
@@ -39,7 +29,16 @@ def get_tokens_for_user(user):
 
 
 class UserRegistrationView(APIView):
+
     def post(self, request, format=None):
+        """create the user in realated models model:User
+
+        Args:
+            request (http): hold the request data 
+
+        Returns:
+            response(json): registered user data
+        """
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             user = serializer.save()
@@ -50,6 +49,14 @@ class UserRegistrationView(APIView):
 
 class UserLoginView(APIView):
     def post(self, request, format=None):
+        """authorize the user and logged in
+
+        Args:
+            request (http): hold the request data 
+
+        Returns:
+            response(json): JWT token
+        """
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             email = serializer.data.get('email')
@@ -59,23 +66,38 @@ class UserLoginView(APIView):
                 login(request, user)
                 token = get_tokens_for_user(user)
                 return Response({'token': token, 'msg': "Login successfully !!"}, status=status.HTTP_202_ACCEPTED)
-            return Response({'errors': "email or password invalid"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'errors': "email or password invalid !!"}, status=status.HTTP_401_UNAUTHORIZED)
         return Response({'errors': {'nonfield_errors': [serializer.errors]}}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-class UserProfileView(APIView):
+class UserLogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, format=None):
-        print("isAuthenticated:", request.user)
-        serializer = UserProfileSerialier(request.user)
-        return Response({'profile': serializer.data}, status=status.HTTP_200_OK)
+    def post(self, request, format=None):
+        """logout the current user
+
+        Args:
+            request (http): hold the request data 
+
+        Returns:
+            response(json): request status
+        """
+        logout(request)
+        return Response({"status": status.HTTP_200_OK, 'message': "current user logout successfully !!"})
 
 
 class UserChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, format=None):
+        """take the new password and change in related model model:User
+
+        Args:
+            request (http): hold the request data 
+
+        Returns:
+            response(json): status about the request
+        """
         serializer = UserChangePasswordVSerializer(
             data=request.data, context={'user': request.user})
         if serializer.is_valid(raise_exception=True):
@@ -84,7 +106,16 @@ class UserChangePasswordView(APIView):
 
 
 class SendPasswordResetEmailView(APIView):
+
     def post(self, request, format=None):
+        """send the email to the user with reset password email
+
+        Args:
+            request (http): hold the request data 
+
+        Returns:
+            response(json): status about the request
+        """
         serializer = SendPasswordResetEmailSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             return Response({'msg': "Password Reset Email has been send successfully !!"}, status=status.HTTP_200_OK)
@@ -92,7 +123,18 @@ class SendPasswordResetEmailView(APIView):
 
 
 class UserResetPasswordView(APIView):
+
     def post(self, request, uid, token, format=None):
+        """set the new password with emailed token authorization
+
+        Args:
+            request (http): hold the request data
+            uid (int): user id
+            token (jwt): emailed token
+
+        Returns:
+           response(json): status about the request
+        """
         serializer = UserResetPasswordSerializer(
             data=request.data, context={'uid': uid, 'token': token})
         if serializer.is_valid(raise_exception=True):
